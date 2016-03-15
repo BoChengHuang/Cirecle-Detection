@@ -7,10 +7,13 @@
 //
 
 #include <iostream>
+#include <tuple>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "cramer-rule.hpp"
+#include "RCDMethod.hpp"
 
 using namespace::std;
 using namespace::cv;
@@ -22,17 +25,6 @@ int ratio = 3;
 int kernel_size = 3;
 int lowThreshold;
 String window_name = "Result window";
-
-void CannyThreshold(int, void*) {
-    blur(src_gray, detected_edges, Size(3,3));
-    
-    Canny(detected_edges, detected_edges, lowThreshold, lowThreshold*3,  kernel_size);
-    
-    dst = Scalar::all(0);
-    
-    src_img.copyTo(dst, detected_edges);
-    imshow(window_name, dst);
-}
 
 void printMap(Mat img) {
     width = img.size().width;
@@ -49,7 +41,16 @@ void printMap(Mat img) {
     }
 }
 
-
+void CannyThreshold(int, void*) {
+    blur(src_gray, detected_edges, Size(3,3));
+    
+    Canny(detected_edges, detected_edges, lowThreshold, lowThreshold*3,  kernel_size);
+    
+    dst = Scalar::all(0);
+    
+    src_img.copyTo(dst, detected_edges);
+    imshow(window_name, dst);
+}
 
 int main(int argc, const char * argv[]) {
     
@@ -67,6 +68,9 @@ int main(int argc, const char * argv[]) {
     
     // print pixels
     //printMap(dst);
+    
+    RCDMethod rcd;
+    rcd.findCandidateCircle(VergePoint(2, 0), VergePoint(0, 2), VergePoint(-2, 0), VergePoint(0, -1));
     
     
     namedWindow(window_name, WINDOW_AUTOSIZE);

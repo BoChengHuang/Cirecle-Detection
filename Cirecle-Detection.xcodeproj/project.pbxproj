@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B3D76C1E1C97EBD30062F602 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B3D76C1D1C97EBD30062F602 /* main.cpp */; };
+		B3D76C261C98528A0062F602 /* cramer-rule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B3D76C251C98528A0062F602 /* cramer-rule.cpp */; };
+		B3D76C2A1C9873560062F602 /* RCDMethod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B3D76C281C9873560062F602 /* RCDMethod.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +28,10 @@
 		B3D76C1A1C97EBD30062F602 /* Cirecle-Detection */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Cirecle-Detection"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3D76C1D1C97EBD30062F602 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B3D76C241C97EBDD0062F602 /* circle.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = circle.bmp; sourceTree = "<group>"; };
+		B3D76C251C98528A0062F602 /* cramer-rule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "cramer-rule.cpp"; sourceTree = "<group>"; };
+		B3D76C271C9870CA0062F602 /* cramer-rule.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = "cramer-rule.hpp"; sourceTree = "<group>"; };
+		B3D76C281C9873560062F602 /* RCDMethod.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RCDMethod.cpp; sourceTree = "<group>"; };
+		B3D76C291C9873560062F602 /* RCDMethod.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RCDMethod.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +66,10 @@
 			children = (
 				B3D76C241C97EBDD0062F602 /* circle.bmp */,
 				B3D76C1D1C97EBD30062F602 /* main.cpp */,
+				B3D76C251C98528A0062F602 /* cramer-rule.cpp */,
+				B3D76C271C9870CA0062F602 /* cramer-rule.hpp */,
+				B3D76C281C9873560062F602 /* RCDMethod.cpp */,
+				B3D76C291C9873560062F602 /* RCDMethod.hpp */,
 			);
 			path = "Cirecle-Detection";
 			sourceTree = "<group>";
@@ -121,6 +131,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B3D76C1E1C97EBD30062F602 /* main.cpp in Sources */,
+				B3D76C2A1C9873560062F602 /* RCDMethod.cpp in Sources */,
+				B3D76C261C98528A0062F602 /* cramer-rule.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
