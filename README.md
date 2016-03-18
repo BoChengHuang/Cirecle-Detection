@@ -17,7 +17,7 @@ Windows:
 
 2. Set environment variables.
 
-3. Run it in Visual studio 2015.
+3. Run it in Visual studio 2015. (x64 Mode)
 
   [Tutorial] (http://muchomanual.com/Instalar-OpenCV-3-1-y-Visual-Studio-2015-/)
 
