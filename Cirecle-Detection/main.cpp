@@ -1,83 +1,159 @@
 //
 //  main.cpp
-//  Cirecle-Detection
+//  CircleDetection
 //
-//  Created by Ives on 3/15/16.
+//  Created by Ives on 3/17/16.
 //  Copyright © 2016 bochengw.twbbs.org. All rights reserved.
 //
 
-#include <iostream>
-#include <tuple>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+#include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "cramer-rule.hpp"
-#include "RCDMethod.hpp"
+#include <opencv2/highgui/highgui.hpp>
 
-using namespace::std;
-using namespace::cv;
+#include <iostream>
+#include <vector>
 
-Mat src_img, src_gray;
-Mat dst, detected_edges;
-int width, height;
-int ratio = 3;
-int kernel_size = 3;
-int lowThreshold;
-String window_name = "Result window";
+using namespace cv;
+using namespace std;
 
-void printMap(Mat img) {
-    width = img.size().width;
-    height = img.size().height;
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
-            Scalar intensity = img.at<uchar>(j, i);
-            //cout << "(" << i << ", " << j << ")";
-            cout << intensity[0] << " ";
-            if (j == height - 1) {
-                cout << endl;
-            }
-        }
-    }
-}
+string filename = "circle.bmp";
+double canny_threshold = 0.8;
+double circle_threshold = 0.7;
+int iterations = 10000;
 
-void CannyThreshold(int, void*) {
-    blur(src_gray, detected_edges, Size(3,3));
-    
-    Canny(detected_edges, detected_edges, lowThreshold, lowThreshold*3,  kernel_size);
-    
-    dst = Scalar::all(0);
-    
-    src_img.copyTo(dst, detected_edges);
-    imshow(window_name, dst);
-}
+vector<Vec3f> circles;
 
-int main(int argc, const char * argv[]) {
+void circleRandomSelect(Mat &image, vector<Vec3f> &circles, double canny_threshold, double circle_threshold, int threshold);
+void drawCicles(Mat image, vector<Vec3f> circles);
+Point2d generateCircle();
+
+int main(int argc, char *argv[]) {
     
-    src_img = imread("circle.bmp");
+    Mat image = imread(filename,0);
     
-    if (src_img.empty()) {
-        cout << "Could not open or find the image" << endl;
-        return -1;
-    }
+    circleRandomSelect(image, circles, canny_threshold, circle_threshold, iterations);
     
-    dst.create(src_img.size(), src_img.type());
-    cvtColor(src_img, src_gray, CV_BGR2GRAY);
+    cout << "Found " << (int)circles.size() << " Circles." << endl;
     
-    CannyThreshold(0, 0);
-    
-    // print pixels
-    //printMap(dst);
-    
-    RCDMethod rcd;
-    rcd.findCandidateCircle(VergePoint(2, 0), VergePoint(0, 2), VergePoint(-2, 0), VergePoint(0, -1));
-    
-    
-    namedWindow(window_name, WINDOW_AUTOSIZE);
-    //imshow(window_name, src_img);
-    
-    waitKey(0);
+    drawCicles(image, circles);
     
     return 0;
 }
 
+void circleRandomSelect(Mat &image, vector<Vec3f> &circles, double canny_threshold, double circle_threshold, int threshold) {
+    
+    circles.clear();
+    
+    Mat verticles;
+    Canny(image, verticles, MAX(canny_threshold/2,1), canny_threshold, 3);
+    
+    vector<Point2d> verticlesCollection;
+    for(int i = 0; i < verticles.rows; i++) {
+        for(int j = 0; j < verticles.cols; j++)  {
+            if(verticles.at<unsigned char>(i,j) == 255) {
+                verticlesCollection.push_back(cv::Point2d(j,i));
+            }
+        }
+    }
+    
+    int x,y;
+    Point2d center;
+    double radius;
+    Point2d point1, point2, point3, point4;
+    
+    double AB, BC, CA, DC;
+    double m_AB, b_AB, m_BC, b_BC;
+    double XmidPoint_AB, YmidPoint_AB, XmidPoint_BC, YmidPoint_BC;
+    double m2_AB,m2_BC, b2_AB, b2_BC;
+
+    
+    RNG rng;
+    int min_point_separation = 10;
+    int colinear_tolerance = 1;
+    int radius_threshold = 3;
+    int verticlesCollection_threshold = 10;
+
+    for(int iteration = 0; iteration < threshold; iteration++) {
+        
+        point1 = verticlesCollection[rng.uniform((int)0, (int)verticlesCollection.size())];
+        point2 = verticlesCollection[rng.uniform((int)0, (int)verticlesCollection.size())];
+        point3 = verticlesCollection[rng.uniform((int)0, (int)verticlesCollection.size())];
+        point4 = verticlesCollection[rng.uniform((int)0, (int)verticlesCollection.size())];
+        
+        AB = norm(point1 - point2);
+        BC = norm(point2 - point3);
+        CA = norm(point3 - point1);
+        DC = norm(point4 - point3);
+        
+        if(AB < min_point_separation || BC < min_point_separation || CA < min_point_separation || DC < min_point_separation) continue;
+        
+        m_AB = (point2.y - point1.y) / (point2.x - point1.x + 0.000000001);
+        b_AB = point2.y - m_AB*point2.x;
+        
+        m_BC = (point3.y - point2.y) / (point3.x - point2.x + 0.000000001);
+        b_BC = point3.y - m_BC*point3.x;
+        
+        
+        if(abs(point3.y - (m_AB*point3.x + b_AB + colinear_tolerance)) < colinear_tolerance) continue;
+        
+
+        XmidPoint_AB = (point2.x + point1.x) / 2.0;
+        YmidPoint_AB = m_AB * XmidPoint_AB + b_AB;
+        m2_AB = -1.0 / m_AB;
+        b2_AB = YmidPoint_AB - m2_AB*XmidPoint_AB;
+        
+        XmidPoint_BC = (point3.x + point2.x) / 2.0;
+        YmidPoint_BC = m_BC * XmidPoint_BC + b_BC;
+        m2_BC = -1.0 / m_BC;
+        b2_BC = YmidPoint_BC - m2_BC*XmidPoint_BC;
+        
+        x = (b2_AB - b2_BC) / (m2_BC - m2_AB);
+        y = m2_AB * x + b2_AB;
+        center = Point2d(x,y);
+        radius = norm(center - point2);
+        
+        if(abs(norm(point4 - center) - radius) > radius_threshold) continue;
+        
+        vector<int> votes;
+        vector<int> no_votes;
+        for(int i = 0; i < (int)verticlesCollection.size(); i++) {
+            double vote_radius = norm(verticlesCollection[i] - center);
+            
+            if(abs(vote_radius - radius) < radius_threshold) {
+                votes.push_back(i);
+            }
+            else {
+                no_votes.push_back(i);
+            }
+        }
+        
+        if((float)votes.size() / (2.0 * CV_PI * radius) >= circle_threshold) {
+            circles.push_back(Vec3f(x,y,radius));
+            
+            vector<Point2d> new_verticlesCollection;
+            for(int i = 0; i < (int)no_votes.size(); i++) {
+                new_verticlesCollection.push_back(verticlesCollection[no_votes[i]]);
+            }
+            verticlesCollection.clear();
+            verticlesCollection = new_verticlesCollection;
+        }
+        
+        if((int)verticlesCollection.size() < verticlesCollection_threshold)
+            break;
+    }
+    
+    return;
+}
+
+void drawCicles(Mat image, vector<Vec3f> circles) {
+    cvtColor(image,image,CV_GRAY2RGB);
+    for(int i = 0; i < (int)circles.size(); i++) {
+        int x = circles[i][0];
+        int y = circles[i][1];
+        float rad = circles[i][2];
+        circle(image, Point(x,y), rad, Scalar(255,0,0));
+    }
+    
+    imshow("circles", image);
+    waitKey();
+}
